@@ -79,7 +79,9 @@ public class SwerveModule
   //Second parameters is veloctiy gain (how much additional speed you get per volt)
   
   private final SimpleMotorFeedforward m_driveFeedforward = new SimpleMotorFeedforward(0.165, 2.1, 0.0);
-  private final SimpleMotorFeedforward m_turnFeedforward = new SimpleMotorFeedforward(0.2, 0.3, 0.0);
+  // TODO Changing radians to degrees, Changed volts per radian to volts per degree by multiplying by 2 pi and dividing by 360
+  private final SimpleMotorFeedforward m_turnFeedforward = new SimpleMotorFeedforward(0.0035, 0.0052, 0.0);
+  // private final SimpleMotorFeedforward m_turnFeedforward = new SimpleMotorFeedforward(0.2, 0.3, 0.0);
 
   /**
    * Constructs a SwerveModule.
@@ -242,7 +244,7 @@ public class SwerveModule
     // final double turnOutput =
         // m_turningPIDController.calculate(Math.toRadians(getTurningEncoderPosition()), state.angle.getRadians());
 
-    // FIXME Changing radians to degrees, need to change this probably as it turns way to fast?
+    // FIXME Changing radians to degrees, Changed volts per radian to volts per degree for kS, kV, kA
     final double turnFeedforward =
         m_turnFeedforward.calculate(m_turningPIDController.getSetpoint().velocity);
 
