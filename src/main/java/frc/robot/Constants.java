@@ -14,6 +14,7 @@ package frc.robot;
  */
 public final class Constants
 {
+    public static final String test = "Test to push code";
     public static final double INCHES_TO_METERS = 0.0254;
 
     // FIXME Check that this is y coord and the other is x coord
