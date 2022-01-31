@@ -161,6 +161,8 @@ public class Robot extends TimedRobot
     // FIXME Changing radians to degrees, changed the constant in order to work
     double rot = m_rotLimiter.calculate(xRight) * Constants.MAX_ROBOT_TURN_SPEED;
 
+    // FIXME Slewrate limiter tuning as it makes delay that can be used for equipment safety and driveability, 3 is probably to slow for deceleration as it feels sluggish
+
     // Scales down the input power
     if (m_controller.getLeftBumper())
     {
