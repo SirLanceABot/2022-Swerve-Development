@@ -28,36 +28,36 @@ public class Drivetrain //extends RobotDriveBase
 //   public static final double kRobotWidth = 23.5; //inches, y-coordinate
 //   public static final double kRobotLength = 23.5; //inches, x-coordinate
 
-  private static final Translation2d m_frontLeftLocation = new Translation2d(Constants.DRIVETRAIN_WHEELBASE_METERS / 2, Constants.DRIVETRAIN_TRACKWIDTH_METERS / 2);
-  private static final Translation2d m_frontRightLocation = new Translation2d(Constants.DRIVETRAIN_WHEELBASE_METERS / 2, -Constants.DRIVETRAIN_TRACKWIDTH_METERS / 2);
-  private static final Translation2d m_backLeftLocation = new Translation2d(-Constants.DRIVETRAIN_WHEELBASE_METERS / 2, Constants.DRIVETRAIN_TRACKWIDTH_METERS / 2);
-  private static final Translation2d m_backRightLocation = new Translation2d(-Constants.DRIVETRAIN_WHEELBASE_METERS / 2, -Constants.DRIVETRAIN_TRACKWIDTH_METERS / 2);
+  private static final Translation2d frontLeftLocation = new Translation2d(Constants.DRIVETRAIN_WHEELBASE_METERS / 2, Constants.DRIVETRAIN_TRACKWIDTH_METERS / 2);
+  private static final Translation2d frontRightLocation = new Translation2d(Constants.DRIVETRAIN_WHEELBASE_METERS / 2, -Constants.DRIVETRAIN_TRACKWIDTH_METERS / 2);
+  private static final Translation2d backLeftLocation = new Translation2d(-Constants.DRIVETRAIN_WHEELBASE_METERS / 2, Constants.DRIVETRAIN_TRACKWIDTH_METERS / 2);
+  private static final Translation2d backRightLocation = new Translation2d(-Constants.DRIVETRAIN_WHEELBASE_METERS / 2, -Constants.DRIVETRAIN_TRACKWIDTH_METERS / 2);
 
-  private static final SwerveModule m_frontLeft = new SwerveModule(Constants.FRONT_LEFT);
-  private static final SwerveModule m_frontRight = new SwerveModule(Constants.FRONT_RIGHT);
-  private static final SwerveModule m_backLeft = new SwerveModule(Constants.BACK_LEFT);
-  private static final SwerveModule m_backRight = new SwerveModule(Constants.BACK_RIGHT);
+  private static final SwerveModule frontLeft = new SwerveModule(Constants.FRONT_LEFT);
+  private static final SwerveModule frontRight = new SwerveModule(Constants.FRONT_RIGHT);
+  private static final SwerveModule backLeft = new SwerveModule(Constants.BACK_LEFT);
+  private static final SwerveModule backRight = new SwerveModule(Constants.BACK_RIGHT);
 
-  private static final AHRS m_navx = new AHRS(SerialPort.Port.kUSB);
+  private static final AHRS navx = new AHRS(SerialPort.Port.kUSB);
 
-  private static final SwerveDriveKinematics m_kinematics =
+  private static final SwerveDriveKinematics kinematics =
       new SwerveDriveKinematics(
-          m_frontLeftLocation, m_frontRightLocation, m_backLeftLocation, m_backRightLocation);
+          frontLeftLocation, frontRightLocation, backLeftLocation, backRightLocation);
 
-  private static final SwerveDriveOdometry m_odometry =
-      new SwerveDriveOdometry(m_kinematics, m_navx.getRotation2d());
+  private static final SwerveDriveOdometry odometry =
+      new SwerveDriveOdometry(kinematics, navx.getRotation2d());
 
   // TODO: Make final by setting to an initial stopped state
   private static SwerveModuleState[] previousSwerveModuleStates = null;
 
   public Drivetrain()
   {
-    m_navx.reset();
+    navx.reset();
     
-    // System.out.println(m_frontLeft.getTurningEncoderPosition());
-    // System.out.println(m_frontRight.getTurningEncoderPosition());
-    // System.out.println(m_backLeft.getTurningEncoderPosition());
-    // System.out.println(m_backRight.getTurningEncoderPosition());
+    // System.out.println(frontLeft.getTurningEncoderPosition());
+    // System.out.println(frontRight.getTurningEncoderPosition());
+    // System.out.println(backLeft.getTurningEncoderPosition());
+    // System.out.println(backRight.getTurningEncoderPosition());
   }
 
   /**
@@ -75,15 +75,15 @@ public class Drivetrain //extends RobotDriveBase
     SwerveModuleState[] swerveModuleStates;
 
     if(fieldRelative)
-      chassisSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(xSpeed, ySpeed, rot, m_navx.getRotation2d());
+      chassisSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(xSpeed, ySpeed, rot, navx.getRotation2d());
     else
       chassisSpeeds = new ChassisSpeeds(xSpeed, ySpeed, rot);
     
-    swerveModuleStates = m_kinematics.toSwerveModuleStates(chassisSpeeds);
+    swerveModuleStates = kinematics.toSwerveModuleStates(chassisSpeeds);
     // var swerveModuleStates =
-    //     m_kinematics.toSwerveModuleStates(
+    //     kinematics.toSwerveModuleStates(
     //         fieldRelative
-    //             ? ChassisSpeeds.fromFieldRelativeSpeeds(xSpeed, ySpeed, rot, m_navx.getRotation2d())
+    //             ? ChassisSpeeds.fromFieldRelativeSpeeds(xSpeed, ySpeed, rot, navx.getRotation2d())
     //             : new ChassisSpeeds(xSpeed, ySpeed, rot));
 
     SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleStates, Constants.MAX_DRIVE_SPEED);
@@ -103,10 +103,10 @@ public class Drivetrain //extends RobotDriveBase
         swerveModuleStates[i].angle = previousSwerveModuleStates[i].angle;
       }
     }
-    m_frontLeft.setDesiredState(swerveModuleStates[0]);
-    m_frontRight.setDesiredState(swerveModuleStates[1]);
-    m_backLeft.setDesiredState(swerveModuleStates[2]);
-    m_backRight.setDesiredState(swerveModuleStates[3]);
+    frontLeft.setDesiredState(swerveModuleStates[0]);
+    frontRight.setDesiredState(swerveModuleStates[1]);
+    backLeft.setDesiredState(swerveModuleStates[2]);
+    backRight.setDesiredState(swerveModuleStates[3]);
 
     previousSwerveModuleStates = swerveModuleStates;
   }
@@ -114,20 +114,20 @@ public class Drivetrain //extends RobotDriveBase
   /** Updates the field relative position of the robot. */
   public void updateOdometry()
   {
-    m_odometry.update(
-        m_navx.getRotation2d(),
-        m_frontLeft.getState(),
-        m_frontRight.getState(),
-        m_backLeft.getState(),
-        m_backRight.getState());
+    odometry.update(
+        navx.getRotation2d(),
+        frontLeft.getState(),
+        frontRight.getState(),
+        backLeft.getState(),
+        backRight.getState());
   }
 
   public void setMotorSpeeds(double driveSpeed, double turnSpeed)
   {
-    m_frontLeft.setMotorSpeeds(driveSpeed, turnSpeed);
-    m_frontRight.setMotorSpeeds(driveSpeed, turnSpeed);
-    m_backLeft.setMotorSpeeds(driveSpeed, turnSpeed);
-    m_backRight.setMotorSpeeds(driveSpeed, turnSpeed);
+    frontLeft.setMotorSpeeds(driveSpeed, turnSpeed);
+    frontRight.setMotorSpeeds(driveSpeed, turnSpeed);
+    backLeft.setMotorSpeeds(driveSpeed, turnSpeed);
+    backRight.setMotorSpeeds(driveSpeed, turnSpeed);
     try
     {
       Robot.bw.newLine();
@@ -140,36 +140,36 @@ public class Drivetrain //extends RobotDriveBase
 
   public void resetEncoders()
   {
-    m_frontLeft.resetEncoders();
-    m_frontRight.resetEncoders();
-    m_backLeft.resetEncoders();
-    m_backRight.resetEncoders();
+    frontLeft.resetEncoders();
+    frontRight.resetEncoders();
+    backLeft.resetEncoders();
+    backRight.resetEncoders();
   }
 
   public double getDriveMotorPosition()
   {
-    return m_backRight.getDriveMotorPosition();
+    return backRight.getDriveMotorPosition();
   }
 
   public double getTurnEncoderPosition()
   {
-    return m_backRight.getTurningEncoderPosition();
+    return backRight.getTurningEncoderPosition();
   }
 
   public double getDriveMotorRate()
   {
-    return m_backRight.getDrivingEncoderRate();
+    return backRight.getDrivingEncoderRate();
   }
   // FIXME Changing radians to degrees, commented out to make sure it breaks or doesn't
   // public double getTurnEncoderRate()
   // {
-  //   return m_backRight.getTurnEncoderRate();
+  //   return backRight.getTurnEncoderRate();
   // }
 
   // @Override
   // public void stopMotor()
   // {
-  //   m_frontLeft
+  //   frontLeft
   // }
 
   // @Override
@@ -180,16 +180,16 @@ public class Drivetrain //extends RobotDriveBase
 
   public void printNavX()
   {
-    // System.out.println("Yaw = " + m_navx.getYaw() + "Rot2d = " + m_navx.getRotation2d());
-    SmartDashboard.putNumber("NavX", m_navx.getRotation2d().getRadians());
+    // System.out.println("Yaw = " + navx.getYaw() + "Rot2d = " + navx.getRotation2d());
+    SmartDashboard.putNumber("NavX", navx.getRotation2d().getRadians());
   }
 
   public void printTurnEncoderPosition()
   {
-    SmartDashboard.putNumber("frontLeft  Turn Encoder", m_frontLeft.getTurningEncoderPosition());
-    SmartDashboard.putNumber("frontRight Turn Encoder", m_frontRight.getTurningEncoderPosition());
-    SmartDashboard.putNumber("backLeft   Turn Encoder", m_backLeft.getTurningEncoderPosition());
-    SmartDashboard.putNumber("backRight  Turn Encoder", m_backRight.getTurningEncoderPosition());
+    SmartDashboard.putNumber("frontLeft  Turn Encoder", frontLeft.getTurningEncoderPosition());
+    SmartDashboard.putNumber("frontRight Turn Encoder", frontRight.getTurningEncoderPosition());
+    SmartDashboard.putNumber("backLeft   Turn Encoder", backLeft.getTurningEncoderPosition());
+    SmartDashboard.putNumber("backRight  Turn Encoder", backRight.getTurningEncoderPosition());
   }
 
   public void printDesiredStates(SwerveModuleState[] sms)

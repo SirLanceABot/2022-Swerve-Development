@@ -16,13 +16,14 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class Robot extends TimedRobot
 {
-  private final XboxController m_controller = new XboxController(0);
-  private final Drivetrain m_swerve = new Drivetrain();
+  private final XboxController controller = new XboxController(0);
+  private final Drivetrain Drivetrain = new Drivetrain();
 
+  // TODO: Change to custom slewrate limiters or something to reduce "lag"
   // Slew rate limiters to make joystick inputs more gentle; 1/3 sec from 0 to 1.
-  private final SlewRateLimiter m_xspeedLimiter = new SlewRateLimiter(3);
-  private final SlewRateLimiter m_yspeedLimiter = new SlewRateLimiter(3);
-  private final SlewRateLimiter m_rotLimiter = new SlewRateLimiter(3);
+  private final SlewRateLimiter xspeedLimiter = new SlewRateLimiter(3);
+  private final SlewRateLimiter yspeedLimiter = new SlewRateLimiter(3);
+  private final SlewRateLimiter rotLimiter = new SlewRateLimiter(3);
 
   public static BufferedWriter bw;
   public static Timer time = new Timer();
@@ -61,8 +62,8 @@ public class Robot extends TimedRobot
   @Override
   public void robotPeriodic()
   {
-    m_swerve.printTurnEncoderPosition();
-    m_swerve.printNavX();    
+    Drivetrain.printTurnEncoderPosition();
+    Drivetrain.printNavX();    
   }
 
   @Override
@@ -101,29 +102,29 @@ public class Robot extends TimedRobot
   {
     time.reset();
     time.start();
-    m_swerve.resetEncoders();
+    Drivetrain.resetEncoders();
     volts = 0.0;
-    // m_swerve.drive(3.0, 0.0, 0.0, false);
+    // swerve.drive(3.0, 0.0, 0.0, false);
     // driveWithJoystick(false);
-    // m_swerve.updateOdometry();
+    // swerve.updateOdometry();
   }
 
   @Override
   public void autonomousPeriodic()
   {
     volts = 10.0;
-    // m_swerve.setMotorSpeeds(0.0, volts / Constants.MAX_BATTERY_VOLTAGE);
-    // System.out.println("norm volts = " + volts + "   rate = " + m_swerve.getTurnEncoderRate());
+    // swerve.setMotorSpeeds(0.0, volts / Constants.MAX_BATTERY_VOLTAGE);
+    // System.out.println("norm volts = " + volts + "   rate = " + swerve.getTurnEncoderRate());
     double driveSpeed = SmartDashboard.getNumber("Drive speed", 0.0);
-    m_swerve.drive(driveSpeed, 0.0, 0.0, true);
+    Drivetrain.drive(driveSpeed, 0.0, 0.0, true);
     // driveWithJoystick(false);
-    // m_swerve.updateOdometry();
+    // swerve.updateOdometry();
   }
 
   @Override
   public void teleopInit()
   {
-    m_swerve.resetEncoders();
+    Drivetrain.resetEncoders();
   }
 
   @Override
@@ -137,9 +138,9 @@ public class Robot extends TimedRobot
     double powerLimit = 0.6;
     double leftTriggerPull = 0.0;
 
-    double yLeft = -m_controller.getLeftY();
-    double xLeft = -m_controller.getLeftX();
-    double xRight = -m_controller.getRightX();
+    double yLeft = -controller.getLeftY();
+    double xLeft = -controller.getLeftX();
+    double xRight = -controller.getRightX();
     double deadbandLeft = 0.15;
     double deadbandRight = 0.18;
 
@@ -150,38 +151,38 @@ public class Robot extends TimedRobot
     
     // Get the x speed. We are inverting this because Xbox controllers return
     // negative values when we push forward.
-    double xSpeed = m_xspeedLimiter.calculate(yLeft) * Constants.MAX_DRIVE_SPEED;
+    double xSpeed = xspeedLimiter.calculate(yLeft) * Constants.MAX_DRIVE_SPEED;
 
     // Get the y speed or sideways/strafe speed. We are inverting this because
     // we want a positive value when we pull to the left. Xbox controllers
     // return positive values when you pull to the right by default.
-    double ySpeed = m_yspeedLimiter.calculate(xLeft) * Constants.MAX_DRIVE_SPEED;
+    double ySpeed = yspeedLimiter.calculate(xLeft) * Constants.MAX_DRIVE_SPEED;
 
     // Get the rate of angular rotation. We are inverting this because we want a
     // positive value when we pull to the left (remember, CCW is positive in
     // mathematics). Xbox controllers return positive values when you pull to
     // the right by default.
     // FIXME Changing radians to degrees, changed the constant in order to work
-    double rot = m_rotLimiter.calculate(xRight) * Constants.MAX_ROBOT_TURN_SPEED;
+    double rot = rotLimiter.calculate(xRight) * Constants.MAX_ROBOT_TURN_SPEED;
 
     // FIXME Slewrate limiter tuning as it makes delay that can be used for equipment safety and driveability, 3 is probably to slow for deceleration as it feels sluggish
 
     // Scales down the input power
-    if (m_controller.getLeftBumper())
+    if (controller.getLeftBumper())
     {
       powerLimit = 1.0;
     }
 
-    powerLimit += m_controller.getLeftTriggerAxis() * (1.0 - powerLimit);
+    powerLimit += controller.getLeftTriggerAxis() * (1.0 - powerLimit);
 
     xSpeed *= powerLimit;
     ySpeed *= powerLimit;
     rot *= powerLimit;
 
-    // m_swerve.setMotorSpeeds(yLeft / 2.0, xRight / 5.0);
-    m_swerve.drive(xSpeed, ySpeed, rot, fieldRelative);
+    // swerve.setMotorSpeeds(yLeft / 2.0, xRight / 5.0);
+    Drivetrain.drive(xSpeed, ySpeed, rot, fieldRelative);
     // System.out.printf("xSpeed = %f, ySpeed = %f, rot = %f\n", xSpeed, ySpeed, rot);
-    // m_swerve.printNavX();
+    // swerve.printNavX();
   }
 
 }

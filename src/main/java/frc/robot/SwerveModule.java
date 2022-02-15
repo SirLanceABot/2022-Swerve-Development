@@ -36,6 +36,7 @@ import com.ctre.phoenix.sensors.CANCoder;
 
 public class SwerveModule 
 {
+  // TODO: Remove these when go to RobotDevelopment
   //FIXME Change Wheel Radius and EncoderResolution
   // public static final double kInchesToMeters = 0.0254;
   // private static final double kWheelRadius = 2 * kInchesToMeters;
@@ -53,21 +54,17 @@ public class SwerveModule
   // private static final double kModuleMaxAngularAcceleration =
   //     2 * Math.PI; // radians per second squared
 
-  //FIXME Convert to Talon FX
-  private final TalonFX m_driveMotor;
-  private final TalonFX m_turnMotor;
+  private final String moduleName;
+  private final TalonFX driveMotor;
+  private final boolean driveMotorInverted;
+  private final CANCoder turnEncoder; //= new CANCoder();
+  private final double turnEncoderOffset;
+  private final TalonFX turnMotor;
 
-  //FIXME Convert to Talon FX
-  // private Encoder m_driveEncoder;
-  private final CANCoder m_turnEncoder; //= new CANCoder();
+  private final PIDController drivePIDController = new PIDController(3.5, 0, 0.09);
+  // private final PIDController turningPIDController = new PIDController(1.0, 0, 0);
 
-  private final String m_moduleName;
-  private final double m_turnEncoderOffset;
-
-  private final PIDController m_drivePIDController = new PIDController(3.5, 0, 0.09);
-  // private final PIDController m_turningPIDController = new PIDController(1.0, 0, 0);
-
-  private final ProfiledPIDController m_turningPIDController =
+  private final ProfiledPIDController turningPIDController =
       new ProfiledPIDController(
           0.0789, 0.0, 0.000877,
           // FIXME Changing radians to degrees, divided by 57 roughly
@@ -78,10 +75,10 @@ public class SwerveModule
   //First parameter is static gain (how much voltage it takes to move)
   //Second parameters is veloctiy gain (how much additional speed you get per volt)
   
-  private final SimpleMotorFeedforward m_driveFeedforward = new SimpleMotorFeedforward(0.165, 2.1, 0.0);
+  private final SimpleMotorFeedforward driveFeedforward = new SimpleMotorFeedforward(0.165, 2.1, 0.0);
   // TODO Changing radians to degrees, Changed volts per radian to volts per degree by multiplying by 2 pi and dividing by 360
-  private final SimpleMotorFeedforward m_turnFeedforward = new SimpleMotorFeedforward(0.0035, 0.0052, 0.0);
-  // private final SimpleMotorFeedforward m_turnFeedforward = new SimpleMotorFeedforward(0.2, 0.3, 0.0);
+  private final SimpleMotorFeedforward turnFeedforward = new SimpleMotorFeedforward(0.0035, 0.0052, 0.0);
+  // private final SimpleMotorFeedforward turnFeedforward = new SimpleMotorFeedforward(0.2, 0.3, 0.0);
 
   /**
    * Constructs a SwerveModule.
@@ -93,37 +90,37 @@ public class SwerveModule
   /*
   public SwerveModule(Constants.SwerveModule smc)
   {
-    m_driveMotor = new TalonFX(smc.driveMotorChannel);
-    m_turnEncoder = new CANCoder(smc.turnMotorEncoder);  
-    m_turnMotor = new TalonFX(smc.turnMotorChannel);
-    m_moduleName = smc.moduleName;
-    m_turnEncoderOffset = smc.turnMotorEncoderOffset;
+    driveMotor = new TalonFX(smc.driveMotorChannel);
+    turnEncoder = new CANCoder(smc.turnMotorEncoder);  
+    turnMotor = new TalonFX(smc.turnMotorChannel);
+    moduleName = smc.moduleName;
+    turnEncoderOffset = smc.turnMotorEncoderOffset;
 
-    m_driveMotor.setStatusFramePeriod(StatusFrameEnhanced.Status_2_Feedback0, 20);
-    configTalon(m_driveMotor, smc.driveMotorInverted);
+    driveMotor.setStatusFramePeriod(StatusFrameEnhanced.Status_2_Feedback0, 20);
+    configTalon(driveMotor, smc.driveMotorInverted);
     // Do not invert any of the turning motors
-    configTalon(m_turnMotor, false);
+    configTalon(turnMotor, false);
     configCANCoder();
 
     // When deploy code set the integrated encoder to the absolute encoder on the CANCoder
-    m_turnEncoder.setPosition(m_turnEncoder.getAbsolutePosition());
+    turnEncoder.setPosition(turnEncoder.getAbsolutePosition());
 
     // resetTurningMotorEncoder();
 
     // Set the distance per pulse for the drive encoder. We can simply use the
     // distance traveled for one rotation of the wheel divided by the encoder
     // resolution.
-    // m_driveEncoder.setDistancePerPulse(2 * Math.PI * kWheelRadius / kEncoderResolution);
+    // driveEncoder.setDistancePerPulse(2 * Math.PI * kWheelRadius / kEncoderResolution);
 
     // Set the distance (in this case, angle) per pulse for the turning encoder.
     // This is the the angle through an entire rotation (2 * wpi::math::pi)
     // divided by the encoder resolution.
-    // m_turningEncoder.setDistancePerPulse(2 * Math.PI / kEncoderResolution);
+    // turningEncoder.setDistancePerPulse(2 * Math.PI / kEncoderResolution);
 
     // Limit the PID Controller's input range between -pi and pi and set the input
     // to be continuous.
     // FIXME Changing radians to degrees, replaced PI with 180
-    m_turningPIDController.enableContinuousInput(-180, 180);
+    turningPIDController.enableContinuousInput(-180, 180);
   }
   */
 
@@ -135,20 +132,20 @@ public class SwerveModule
    */
   public SwerveModule(SwerveModuleData smd)
   {
-    m_driveMotor = new TalonFX(smd.driveMotorChannel);
-    m_turnEncoder = new CANCoder(smd.turnEncoderChannel);  
-    m_turnMotor = new TalonFX(smd.turnMotorChannel);
-    m_moduleName = smd.moduleName;
-    m_turnEncoderOffset = smd.turnEncoderOffset;
+    moduleName = smd.moduleName;
+    driveMotor = new TalonFX(smd.driveMotorChannel);
+    driveMotorInverted = smd.driveMotorInverted;
+    turnEncoder = new CANCoder(smd.turnEncoderChannel);  
+    turnEncoderOffset = smd.turnEncoderOffset;
+    turnMotor = new TalonFX(smd.turnMotorChannel);
 
-    m_driveMotor.setStatusFramePeriod(StatusFrameEnhanced.Status_2_Feedback0, 20);
-    configTalon(m_driveMotor, smd.driveMotorInverted);
-    // Do not invert any of the turning motors
-    configTalon(m_turnMotor, false);
+    driveMotor.setStatusFramePeriod(StatusFrameEnhanced.Status_2_Feedback0, 20);
+    configDriveTalon();
+    configTurnTalon(); // Do not invert any of the turning motors
     configCANCoder();
 
     // When deploy code set the integrated encoder to the absolute encoder on the CANCoder
-    m_turnEncoder.setPosition(m_turnEncoder.getAbsolutePosition());
+    turnEncoder.setPosition(turnEncoder.getAbsolutePosition());
 
     // TODO: Cleanup old commented out code
 
@@ -157,34 +154,49 @@ public class SwerveModule
     // Set the distance per pulse for the drive encoder. We can simply use the
     // distance traveled for one rotation of the wheel divided by the encoder
     // resolution.
-    // m_driveEncoder.setDistancePerPulse(2 * Math.PI * kWheelRadius / kEncoderResolution);
+    // driveEncoder.setDistancePerPulse(2 * Math.PI * kWheelRadius / kEncoderResolution);
 
     // Set the distance (in this case, angle) per pulse for the turning encoder.
     // This is the the angle through an entire rotation (2 * wpi::math::pi)
     // divided by the encoder resolution.
-    // m_turningEncoder.setDistancePerPulse(2 * Math.PI / kEncoderResolution);
+    // turningEncoder.setDistancePerPulse(2 * Math.PI / kEncoderResolution);
 
     // Limit the PID Controller's input range between -pi and pi and set the input
     // to be continuous.
     // FIXME Changing radians to degrees, replaced PI with 180
-    m_turningPIDController.enableContinuousInput(-180, 180);
+    turningPIDController.enableContinuousInput(-180, 180);
   }
 
-  // TODO Separate for the drive motor and turn motor
-  private static void configTalon(TalonFX motor, boolean inverted)
+  private void configDriveTalon()
   {
-    motor.configFactoryDefault();
-    motor.setInverted(inverted);
-    motor.setNeutralMode(NeutralMode.Brake);
-    motor.configForwardSoftLimitEnable(false);
-    motor.configReverseSoftLimitEnable(false);
-    motor.configSelectedFeedbackSensor(FeedbackDevice.IntegratedSensor); //TODO Convert to newer config API
-    // motor.configStatorCurrentLimit(new StatorCurrentLimitConfiguration(true, 20, 25, 1.0));
-    // motor.configSupplyCurrentLimit(new SupplyCurrentLimitConfiguration(true, 10, 15, 0.5));
-    // motor.configOpenloopRamp(openLoopRamp);
-    motor.configNeutralDeadband(0.001);
-    motor.configVoltageCompSaturation(Constants.MAX_BATTERY_VOLTAGE);
-    motor.enableVoltageCompensation(true);
+    driveMotor.configFactoryDefault();
+    driveMotor.setInverted(driveMotorInverted);
+    driveMotor.setNeutralMode(NeutralMode.Brake);
+    driveMotor.configForwardSoftLimitEnable(false);
+    driveMotor.configReverseSoftLimitEnable(false);
+    driveMotor.configSelectedFeedbackSensor(FeedbackDevice.IntegratedSensor); //TODO Convert to newer config API
+    // driveMotor.configStatorCurrentLimit(new StatorCurrentLimitConfiguration(true, 20, 25, 1.0));
+    // driveMotor.configSupplyCurrentLimit(new SupplyCurrentLimitConfiguration(true, 10, 15, 0.5));
+    // driveMotor.configOpenloopRamp(openLoopRamp);
+    driveMotor.configNeutralDeadband(0.001);
+    driveMotor.configVoltageCompSaturation(Constants.MAX_BATTERY_VOLTAGE);
+    driveMotor.enableVoltageCompensation(true);
+  }
+
+  private void configTurnTalon()
+  {
+    turnMotor.configFactoryDefault();
+    turnMotor.setInverted(false);
+    turnMotor.setNeutralMode(NeutralMode.Brake);
+    turnMotor.configForwardSoftLimitEnable(false);
+    turnMotor.configReverseSoftLimitEnable(false);
+    turnMotor.configSelectedFeedbackSensor(FeedbackDevice.IntegratedSensor); //TODO Convert to newer config API
+    // turnMotor.configStatorCurrentLimit(new StatorCurrentLimitConfiguration(true, 20, 25, 1.0));
+    // turnMotor.configSupplyCurrentLimit(new SupplyCurrentLimitConfiguration(true, 10, 15, 0.5));
+    // turnMotor.configOpenloopRamp(openLoopRamp);
+    turnMotor.configNeutralDeadband(0.001);
+    turnMotor.configVoltageCompSaturation(Constants.MAX_BATTERY_VOLTAGE);
+    turnMotor.enableVoltageCompensation(true);
   }
 
   private void configCANCoder()
@@ -209,11 +221,11 @@ public class SwerveModule
       CANCoderConfigs.customParam1 = 0;
 
       // Individual Settings
-      System.out.println(m_moduleName);
+      System.out.println(moduleName);
       // frontLeftEncoder = new CANCoder(Constants.SwerveModule.frontLeft.turnMotorEncoder);
-      // System.out.println("setStatusFramePeriod " + m_turnEncoder.setStatusFramePeriod(CANCoderStatusFrame.SensorData, (int)(steerAdjustPeriod*1000.*.8)));
-      CANCoderConfigs.magnetOffsetDegrees = m_turnEncoderOffset;
-      System.out.println("configAllSettings " + m_turnEncoder.configAllSettings(CANCoderConfigs));
+      // System.out.println("setStatusFramePeriod " + turnEncoder.setStatusFramePeriod(CANCoderStatusFrame.SensorData, (int)(steerAdjustPeriod*1000.*.8)));
+      CANCoderConfigs.magnetOffsetDegrees = turnEncoderOffset;
+      System.out.println("configAllSettings " + turnEncoder.configAllSettings(CANCoderConfigs));
       System.out.println(CANCoderConfigs.toString());
 
       /*
@@ -269,56 +281,56 @@ public class SwerveModule
 
     double driveP = SmartDashboard.getNumber("Drive P", 0.0);
     double driveD = SmartDashboard.getNumber("Drive D", 0.0);
-    m_drivePIDController.setP(driveP);
-    m_drivePIDController.setD(driveD);
+    drivePIDController.setP(driveP);
+    drivePIDController.setD(driveD);
 
     // Calculate the drive output from the drive PID controller.
     final double driveOutput =
-        m_drivePIDController.calculate(getDrivingEncoderRate(), state.speedMetersPerSecond);
+        drivePIDController.calculate(getDrivingEncoderRate(), state.speedMetersPerSecond);
 
-    final double driveFeedforward = m_driveFeedforward.calculate(state.speedMetersPerSecond);
+    final double driveFeedforwardValue = driveFeedforward.calculate(state.speedMetersPerSecond);
 
     // Calculate the turning motor output from the turning PID controller.
 
     // double p = SmartDashboard.getNumber("Turn P", 0.0);
     // double d = SmartDashboard.getNumber("Turn D", 0.0);
-    // m_turningPIDController.setP(p);
-    // m_turningPIDController.setD(d);
+    // turningPIDController.setP(p);
+    // turningPIDController.setD(d);
     // FIXME Changing radians to degrees, changed PID to take degrees
-    final double turnOutput = m_turningPIDController.calculate(getTurningEncoderPosition(), state.angle.getDegrees());
+    final double turnOutput = turningPIDController.calculate(getTurningEncoderPosition(), state.angle.getDegrees());
 
     // final double turnOutput =
-        // m_turningPIDController.calculate(Math.toRadians(getTurningEncoderPosition()), state.angle.getRadians());
+        // turningPIDController.calculate(Math.toRadians(getTurningEncoderPosition()), state.angle.getRadians());
 
     // FIXME Changing radians to degrees, Changed volts per radian to volts per degree for kS, kV, kA
-    final double turnFeedforward =
-        m_turnFeedforward.calculate(m_turningPIDController.getSetpoint().velocity);
+    final double turnFeedforwardValue =
+        turnFeedforward.calculate(turningPIDController.getSetpoint().velocity);
 
     //FIXME Convert to Talon FX
-    var normalizedDriveVoltage = normalizeVoltage(driveOutput + driveFeedforward);
-    var normalizedTurnVoltage = normalizeVoltage(turnOutput + turnFeedforward);
-    m_driveMotor.set(ControlMode.PercentOutput, normalizedDriveVoltage);
-    m_turnMotor.set(ControlMode.PercentOutput, normalizedTurnVoltage);
+    var normalizedDriveVoltage = normalizeVoltage(driveOutput + driveFeedforwardValue);
+    var normalizedTurnVoltage = normalizeVoltage(turnOutput + turnFeedforwardValue);
+    driveMotor.set(ControlMode.PercentOutput, normalizedDriveVoltage);
+    turnMotor.set(ControlMode.PercentOutput, normalizedTurnVoltage);
 
 
     // FIXME Changing radians to degrees
-    SmartDashboard.putNumber(m_moduleName + " Optimized Angle Radians", state.angle.getRadians());
-    SmartDashboard.putNumber(m_moduleName + " Optimized Angle Degrees", state.angle.getDegrees());
-    SmartDashboard.putNumber(m_moduleName + " Optimized Speed", state.speedMetersPerSecond);
-    SmartDashboard.putNumber(m_moduleName + " Turn Output", turnOutput);
-    SmartDashboard.putNumber(m_moduleName + " Turn Feedforward", turnFeedforward);
-    SmartDashboard.putNumber(m_moduleName + " Normalized Turn Percent", normalizedTurnVoltage);
-    SmartDashboard.putNumber(m_moduleName + " Drive Output", driveOutput);
-    SmartDashboard.putNumber(m_moduleName + " Drive Feedforward", driveFeedforward);
-    SmartDashboard.putNumber(m_moduleName + " Normalized Drive Percent", normalizedDriveVoltage);
-    SmartDashboard.putNumber(m_moduleName + " Drive Encoder Rate", getDrivingEncoderRate());
+    SmartDashboard.putNumber(moduleName + " Optimized Angle Radians", state.angle.getRadians());
+    SmartDashboard.putNumber(moduleName + " Optimized Angle Degrees", state.angle.getDegrees());
+    SmartDashboard.putNumber(moduleName + " Optimized Speed", state.speedMetersPerSecond);
+    SmartDashboard.putNumber(moduleName + " Turn Output", turnOutput);
+    SmartDashboard.putNumber(moduleName + " Turn Feedforward", turnFeedforwardValue);
+    SmartDashboard.putNumber(moduleName + " Normalized Turn Percent", normalizedTurnVoltage);
+    SmartDashboard.putNumber(moduleName + " Drive Output", driveOutput);
+    SmartDashboard.putNumber(moduleName + " Drive Feedforward", driveFeedforwardValue);
+    SmartDashboard.putNumber(moduleName + " Normalized Drive Percent", normalizedDriveVoltage);
+    SmartDashboard.putNumber(moduleName + " Drive Encoder Rate", getDrivingEncoderRate());
   }
 
   public double getDrivingEncoderRate()
   {
-    double velocity = m_driveMotor.getSelectedSensorVelocity() * Constants.DRIVE_ENCODER_RATE_TO_METERS_PER_SEC;
+    double velocity = driveMotor.getSelectedSensorVelocity() * Constants.DRIVE_ENCODER_RATE_TO_METERS_PER_SEC;
     // FIXME Units conversion?
-    // System.out.println(m_driveMotor.getDeviceID() + " " + velocity);
+    // System.out.println(driveMotor.getDeviceID() + " " + velocity);
     return velocity;
   }
 
@@ -326,16 +338,16 @@ public class SwerveModule
   {
     // FIXME Changing radians to degrees included making encoder return degrees
     // Used the Phoenix tuner to change the return value to radians
-    return m_turnEncoder.getAbsolutePosition(); 
+    return turnEncoder.getAbsolutePosition(); 
     // Reset facory default in Phoenix Tuner to make the 0 go forward 
     // while wheel bolts facing in, then save, then get absolute value and put in enum
-    // return m_turningEncoder.getAbsolutePosition() - m_turningEncoderOffset; 
+    // return turningEncoder.getAbsolutePosition() - turningEncoderOffset; 
   }
 
   // FIXME Fix reset turning motor encoder
   public void resetTurningMotorEncoder()
   {
-    // m_turningEncoder.setPosition(m_turningEncoderOffset);
+    // turningEncoder.setPosition(turningEncoderOffset);
   }
 
   /**
@@ -351,19 +363,19 @@ public class SwerveModule
 
   public void resetEncoders()
   {
-    m_driveMotor.setSelectedSensorPosition(0.0);
-    m_turnMotor.setSelectedSensorPosition(0.0);
-    m_turnEncoder.setPosition(m_turnEncoder.getAbsolutePosition());
+    driveMotor.setSelectedSensorPosition(0.0);
+    turnMotor.setSelectedSensorPosition(0.0);
+    turnEncoder.setPosition(turnEncoder.getAbsolutePosition());
   }
 
   public void setMotorSpeeds(double driveSpeed, double turnSpeed)
   {
     try
     {
-      // var data = String.format("\"%s Turn\", %f, %f, %f, ", m_moduleName, Timer.getFPGATimestamp(), 
-      //   m_turnEncoder.getVelocity(), m_turnEncoder.getPosition());
-      var data = String.format("\"%s Drive\", %f, %f, %f, ", m_moduleName, Robot.time.get(), 
-        getDrivingEncoderRate(), m_driveMotor.getSelectedSensorPosition() * Constants.DRIVE_ENCODER_RATE_TO_METERS_PER_SEC / 10.0);
+      // var data = String.format("\"%s Turn\", %f, %f, %f, ", moduleName, Timer.getFPGATimestamp(), 
+      //   turnEncoder.getVelocity(), turnEncoder.getPosition());
+      var data = String.format("\"%s Drive\", %f, %f, %f, ", moduleName, Robot.time.get(), 
+        getDrivingEncoderRate(), driveMotor.getSelectedSensorPosition() * Constants.DRIVE_ENCODER_RATE_TO_METERS_PER_SEC / 10.0);
       Robot.bw.write(data);
     }
     catch (Exception e)
@@ -371,18 +383,18 @@ public class SwerveModule
       e.printStackTrace();
     }
 
-    m_driveMotor.set(ControlMode.PercentOutput, driveSpeed);
-    m_turnMotor.set(ControlMode.PercentOutput, turnSpeed);
+    driveMotor.set(ControlMode.PercentOutput, driveSpeed);
+    turnMotor.set(ControlMode.PercentOutput, turnSpeed);
   }
 
   public double getDriveMotorPosition()
   {
-    return m_driveMotor.getSelectedSensorPosition();
+    return driveMotor.getSelectedSensorPosition();
   }
 
   // FIXME Changing radians to degrees, commented out to make sure it breaks or doesn't
   // public double getTurnEncoderRate()
   // {
-  //   return m_turnEncoder.getVelocity();
+  //   return turnEncoder.getVelocity();
   // }
 }
