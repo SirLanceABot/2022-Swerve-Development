@@ -89,6 +89,8 @@ public class SwerveModule
    * @param driveMotorChannel ID for the drive motor.
    * @param turnMotorChannel ID for the turning motor.
    */
+  // Old using enum constructor
+  /*
   public SwerveModule(Constants.SwerveModule smc)
   {
     m_driveMotor = new TalonFX(smc.driveMotorChannel);
@@ -105,6 +107,50 @@ public class SwerveModule
 
     // When deploy code set the integrated encoder to the absolute encoder on the CANCoder
     m_turnEncoder.setPosition(m_turnEncoder.getAbsolutePosition());
+
+    // resetTurningMotorEncoder();
+
+    // Set the distance per pulse for the drive encoder. We can simply use the
+    // distance traveled for one rotation of the wheel divided by the encoder
+    // resolution.
+    // m_driveEncoder.setDistancePerPulse(2 * Math.PI * kWheelRadius / kEncoderResolution);
+
+    // Set the distance (in this case, angle) per pulse for the turning encoder.
+    // This is the the angle through an entire rotation (2 * wpi::math::pi)
+    // divided by the encoder resolution.
+    // m_turningEncoder.setDistancePerPulse(2 * Math.PI / kEncoderResolution);
+
+    // Limit the PID Controller's input range between -pi and pi and set the input
+    // to be continuous.
+    // FIXME Changing radians to degrees, replaced PI with 180
+    m_turningPIDController.enableContinuousInput(-180, 180);
+  }
+  */
+
+  
+  /**
+   * Constructs a SwerveModule.
+   *
+   * @param smd SwerveModuleData for making SwerveModules
+   */
+  public SwerveModule(SwerveModuleData smd)
+  {
+    m_driveMotor = new TalonFX(smd.driveMotorChannel);
+    m_turnEncoder = new CANCoder(smd.turnEncoderChannel);  
+    m_turnMotor = new TalonFX(smd.turnMotorChannel);
+    m_moduleName = smd.moduleName;
+    m_turnEncoderOffset = smd.turnEncoderOffset;
+
+    m_driveMotor.setStatusFramePeriod(StatusFrameEnhanced.Status_2_Feedback0, 20);
+    configTalon(m_driveMotor, smd.driveMotorInverted);
+    // Do not invert any of the turning motors
+    configTalon(m_turnMotor, false);
+    configCANCoder();
+
+    // When deploy code set the integrated encoder to the absolute encoder on the CANCoder
+    m_turnEncoder.setPosition(m_turnEncoder.getAbsolutePosition());
+
+    // TODO: Cleanup old commented out code
 
     // resetTurningMotorEncoder();
 

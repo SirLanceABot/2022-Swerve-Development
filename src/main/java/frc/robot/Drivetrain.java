@@ -28,36 +28,36 @@ public class Drivetrain //extends RobotDriveBase
 //   public static final double kRobotWidth = 23.5; //inches, y-coordinate
 //   public static final double kRobotLength = 23.5; //inches, x-coordinate
 
-  private final Translation2d m_frontLeftLocation = new Translation2d(Constants.DRIVETRAIN_WHEELBASE_METERS / 2, Constants.DRIVETRAIN_TRACKWIDTH_METERS / 2);
-  private final Translation2d m_frontRightLocation = new Translation2d(Constants.DRIVETRAIN_WHEELBASE_METERS / 2, -Constants.DRIVETRAIN_TRACKWIDTH_METERS / 2);
-  private final Translation2d m_backLeftLocation = new Translation2d(-Constants.DRIVETRAIN_WHEELBASE_METERS / 2, Constants.DRIVETRAIN_TRACKWIDTH_METERS / 2);
-  private final Translation2d m_backRightLocation = new Translation2d(-Constants.DRIVETRAIN_WHEELBASE_METERS / 2, -Constants.DRIVETRAIN_TRACKWIDTH_METERS / 2);
+  private static final Translation2d m_frontLeftLocation = new Translation2d(Constants.DRIVETRAIN_WHEELBASE_METERS / 2, Constants.DRIVETRAIN_TRACKWIDTH_METERS / 2);
+  private static final Translation2d m_frontRightLocation = new Translation2d(Constants.DRIVETRAIN_WHEELBASE_METERS / 2, -Constants.DRIVETRAIN_TRACKWIDTH_METERS / 2);
+  private static final Translation2d m_backLeftLocation = new Translation2d(-Constants.DRIVETRAIN_WHEELBASE_METERS / 2, Constants.DRIVETRAIN_TRACKWIDTH_METERS / 2);
+  private static final Translation2d m_backRightLocation = new Translation2d(-Constants.DRIVETRAIN_WHEELBASE_METERS / 2, -Constants.DRIVETRAIN_TRACKWIDTH_METERS / 2);
 
-  private final SwerveModule m_frontLeft = new SwerveModule(Constants.SwerveModule.frontLeft);
-  private final SwerveModule m_frontRight = new SwerveModule(Constants.SwerveModule.frontRight);
-  private final SwerveModule m_backLeft = new SwerveModule(Constants.SwerveModule.backLeft);
-  private final SwerveModule m_backRight = new SwerveModule(Constants.SwerveModule.backRight);
+  private static final SwerveModule m_frontLeft = new SwerveModule(Constants.FRONT_LEFT);
+  private static final SwerveModule m_frontRight = new SwerveModule(Constants.FRONT_RIGHT);
+  private static final SwerveModule m_backLeft = new SwerveModule(Constants.BACK_LEFT);
+  private static final SwerveModule m_backRight = new SwerveModule(Constants.BACK_RIGHT);
 
-  //FIXME Convert gyro to NavX
-  private final AHRS m_navx = new AHRS(SerialPort.Port.kUSB);
+  private static final AHRS m_navx = new AHRS(SerialPort.Port.kUSB);
 
-  private final SwerveDriveKinematics m_kinematics =
+  private static final SwerveDriveKinematics m_kinematics =
       new SwerveDriveKinematics(
           m_frontLeftLocation, m_frontRightLocation, m_backLeftLocation, m_backRightLocation);
 
-  private final SwerveDriveOdometry m_odometry =
+  private static final SwerveDriveOdometry m_odometry =
       new SwerveDriveOdometry(m_kinematics, m_navx.getRotation2d());
 
-  private SwerveModuleState[] previousSwerveModuleStates = null;
+  // TODO: Make final by setting to an initial stopped state
+  private static SwerveModuleState[] previousSwerveModuleStates = null;
 
   public Drivetrain()
   {
     m_navx.reset();
     
-    System.out.println(m_frontLeft.getTurningEncoderPosition());
-    System.out.println(m_frontRight.getTurningEncoderPosition());
-    System.out.println(m_backLeft.getTurningEncoderPosition());
-    System.out.println(m_backRight.getTurningEncoderPosition());
+    // System.out.println(m_frontLeft.getTurningEncoderPosition());
+    // System.out.println(m_frontRight.getTurningEncoderPosition());
+    // System.out.println(m_backLeft.getTurningEncoderPosition());
+    // System.out.println(m_backRight.getTurningEncoderPosition());
   }
 
   /**

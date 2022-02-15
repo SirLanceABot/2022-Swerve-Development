@@ -79,6 +79,8 @@ public final class Constants
     public static final double BACK_RIGHT_MODULE_STEER_OFFSET = 1177;//-Math.toRadians(103.447265625 + 180.0); // FIXEDME Measure and set back right steer offset
     */
   
+    /*
+    Old enum for SwerveModule creation
     static enum SwerveModule
     {
         frontLeft("Front Left", 7, true, 8, -167.255859375, 9){},
@@ -100,6 +102,7 @@ public final class Constants
          * @param turnMotorEncoderOffset
          * @param turnMotorChannel
          */
+    /*
         private SwerveModule( String moduleName,
                             int driveMotorChannel, 
                             boolean driveMotorInverted, 
@@ -136,4 +139,10 @@ public final class Constants
             return sb.toString();
         }
     }
+    */
+
+    public static final SwerveModuleData FRONT_LEFT = new SwerveModuleData("Front Left", 7, true, 8, -167.255859375, 9);
+    public static final SwerveModuleData FRONT_RIGHT = new SwerveModuleData("Front Right", 10, false, 11, -305.947265625, 12);
+    public static final SwerveModuleData BACK_LEFT = new SwerveModuleData("Back Left", 4, true, 5, -348.75, 6);
+    public static final SwerveModuleData BACK_RIGHT = new SwerveModuleData("Back Right", 1, false, 2, -101.953125, 3);
 }

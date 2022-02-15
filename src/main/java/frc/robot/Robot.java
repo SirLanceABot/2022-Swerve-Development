@@ -52,7 +52,10 @@ public class Robot extends TimedRobot
     SmartDashboard.putNumber("Drive D", 0.0);
     SmartDashboard.putNumber("Drive speed", 0.0);
 
-    System.out.println(Constants.SwerveModule.dump());
+    System.out.println(Constants.FRONT_LEFT);
+    System.out.println(Constants.FRONT_RIGHT);
+    System.out.println(Constants.BACK_LEFT);
+    System.out.println(Constants.BACK_RIGHT);
   }
 
   @Override
