@@ -61,7 +61,7 @@ public class SwerveModule
   private final double turnEncoderOffset;
   private final TalonFX turnMotor;
 
-  private final PIDController drivePIDController = new PIDController(3.5, 0, 0.09);
+  private final PIDController drivePIDController = new PIDController(3.5, 0, 0.09); // volts / (m/s) for P and volts / (m/s^2) for D
   // private final PIDController turningPIDController = new PIDController(1.0, 0, 0);
 
   private final ProfiledPIDController turningPIDController =
@@ -181,6 +181,19 @@ public class SwerveModule
     driveMotor.configNeutralDeadband(0.001);
     driveMotor.configVoltageCompSaturation(Constants.MAX_BATTERY_VOLTAGE);
     driveMotor.enableVoltageCompensation(true);
+
+    // Setup PID through TalonFX
+    // Old values were 3.5, 0, 0.09
+    // volts / (m/s) for P
+    // volts / (m/s^2) for D
+    // kP Converting v / (process unit) to volts
+    // Assuming kI is 0
+    // kD Converting v / (rate of change of process unit per time base) to volts
+
+    // TODO: Finish moving PID to TalonFX
+    // driveMotor.config_kP(0, 3.5);
+    // driveMotor.config_kI(0, 0);
+    // driveMotor.config_kD(0, 0.09);
   }
 
   private void configTurnTalon()
@@ -328,6 +341,7 @@ public class SwerveModule
 
   public double getDrivingEncoderRate()
   {
+    // FIXME Changing drivePID, converting 
     double velocity = driveMotor.getSelectedSensorVelocity() * Constants.DRIVE_ENCODER_RATE_TO_METERS_PER_SEC;
     // FIXME Units conversion?
     // System.out.println(driveMotor.getDeviceID() + " " + velocity);

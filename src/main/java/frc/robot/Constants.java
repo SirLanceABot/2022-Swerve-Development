@@ -55,6 +55,10 @@ public final class Constants
 
     public static final double DRIVE_ENCODER_RATE_TO_METERS_PER_SEC = 
         ((10.0 / DRIVE_MOTOR_ENCODER_RESOLUTION) / DRIVE_MOTOR_GEAR_RATIO) * (2.0 * Math.PI * WHEEL_RADIUS_METERS);
+    // FIXME Changing drivePID, converting to something
+    public static final double DRIVE_ENCODER_RATE_IN_MOTOR_TICKS_PER_100MS = 
+        ((1.0 / DRIVE_MOTOR_ENCODER_RESOLUTION) / DRIVE_MOTOR_GEAR_RATIO);
+
     public static final double TURN_ENCODER_RATE_TO_RADIANS_PER_SEC = 
         (1.0 / TURN_MOTOR_ENCODER_RESOLUTION) * (2.0 * Math.PI);
 
