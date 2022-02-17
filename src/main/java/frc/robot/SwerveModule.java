@@ -190,10 +190,14 @@ public class SwerveModule
     // Assuming kI is 0
     // kD Converting v / (rate of change of process unit per time base) to volts
 
+    // TODO: Move these constants somewhere else or remove calculations
+    final double kPTalonFX = (3.5 * 10) / Constants.DRIVE_ENCODER_RATE_IN_MOTOR_TICKS_PER_100MS;
+    final double kDTalonFX = 0.09;
+
     // TODO: Finish moving PID to TalonFX
-    // driveMotor.config_kP(0, 3.5);
+    driveMotor.config_kP(0, kPTalonFX);
     // driveMotor.config_kI(0, 0);
-    // driveMotor.config_kD(0, 0.09);
+    driveMotor.config_kD(0, kDTalonFX);
   }
 
   private void configTurnTalon()
@@ -341,7 +345,7 @@ public class SwerveModule
 
   public double getDrivingEncoderRate()
   {
-    // FIXME Changing drivePID, converting 
+    // FIXME Changing drivePID, changed nothing yet and probably do not need to because this will still return ticks / 100 ms
     double velocity = driveMotor.getSelectedSensorVelocity() * Constants.DRIVE_ENCODER_RATE_TO_METERS_PER_SEC;
     // FIXME Units conversion?
     // System.out.println(driveMotor.getDeviceID() + " " + velocity);
