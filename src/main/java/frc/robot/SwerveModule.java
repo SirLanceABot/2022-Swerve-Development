@@ -192,7 +192,8 @@ public class SwerveModule
 
     // TODO: Move these constants somewhere else or remove calculations
     final double kPTalonFX = (3.5 * 10) / Constants.DRIVE_ENCODER_RATE_IN_MOTOR_TICKS_PER_100MS;
-    final double kDTalonFX = 0.09;
+    // 10th of a second to 50th of a second or something
+    final double kDTalonFX = (0.09 * (10 * 5)) / Constants.DRIVE_ENCODER_RATE_IN_MOTOR_TICKS_PER_100MS;
 
     // TODO: Finish moving PID to TalonFX
     driveMotor.config_kP(0, kPTalonFX);
