@@ -75,7 +75,9 @@ public class SwerveModule
   //First parameter is static gain (how much voltage it takes to move)
   //Second parameters is veloctiy gain (how much additional speed you get per volt)
   
+  // 
   private final SimpleMotorFeedforward driveFeedforward = new SimpleMotorFeedforward(0.165, 2.1, 0.0);
+  
   // TODO Changing radians to degrees, Changed volts per radian to volts per degree by multiplying by 2 pi and dividing by 360
   private final SimpleMotorFeedforward turnFeedforward = new SimpleMotorFeedforward(0.0035, 0.0052, 0.0);
   // private final SimpleMotorFeedforward turnFeedforward = new SimpleMotorFeedforward(0.2, 0.3, 0.0);
@@ -190,15 +192,24 @@ public class SwerveModule
     // Assuming kI is 0
     // kD Converting v / (rate of change of process unit per time base) to volts
 
+    // Old before pdf explanation?
+    // final double kPTalonFX = (3.5 * 10) / Constants.DRIVE_ENCODER_RATE_IN_MOTOR_TICKS_PER_100MS;
+    // // 10th of a second to 50th of a second or something
+    // final double kDTalonFX = (0.09 * (10 * 5)) / Constants.DRIVE_ENCODER_RATE_IN_MOTOR_TICKS_PER_100MS;
+
     // TODO: Move these constants somewhere else or remove calculations
-    final double kPTalonFX = (3.5 * 10) / Constants.DRIVE_ENCODER_RATE_IN_MOTOR_TICKS_PER_100MS;
+    final double kPTalonFX = (3.5 / (1 / Constants.DRIVE_ENCODER_RATE_TO_METERS_PER_SEC));
     // 10th of a second to 50th of a second or something
-    final double kDTalonFX = (0.09 * (10 * 5)) / Constants.DRIVE_ENCODER_RATE_IN_MOTOR_TICKS_PER_100MS;
+    final double kDTalonFX = (0.09 * (0.2 / (1 / Constants.DRIVE_ENCODER_RATE_TO_METERS_PER_SEC)));
+
+    // final double kFTalonFX = (1023 * )
 
     // TODO: Finish moving PID to TalonFX
     driveMotor.config_kP(0, kPTalonFX);
-    // driveMotor.config_kI(0, 0);
+    driveMotor.config_kI(0, 0);
     driveMotor.config_kD(0, kDTalonFX);
+
+    // driveMotor.config_kF(0, kFTalonFX);
   }
 
   private void configTurnTalon()
