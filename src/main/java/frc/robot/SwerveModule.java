@@ -4,8 +4,6 @@
 
 package frc.robot;
 
-import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
-
 import edu.wpi.first.wpilibj.Encoder;
 
 import com.ctre.phoenix.sensors.AbsoluteSensorRange;
@@ -34,7 +32,7 @@ import com.ctre.phoenix.motorcontrol.StatusFrameEnhanced;
 import com.ctre.phoenix.motorcontrol.can.TalonFX;
 import com.ctre.phoenix.sensors.CANCoder;
 
-public class SwerveModule 
+public class SwerveModule
 {
   // TODO: Remove these when go to RobotDevelopment
   //FIXME Change Wheel Radius and EncoderResolution
@@ -410,24 +408,24 @@ public class SwerveModule
     turnEncoder.setPosition(turnEncoder.getAbsolutePosition());
   }
 
-  public void setMotorSpeeds(double driveSpeed, double turnSpeed)
-  {
-    try
-    {
-      // var data = String.format("\"%s Turn\", %f, %f, %f, ", moduleName, Timer.getFPGATimestamp(), 
-      //   turnEncoder.getVelocity(), turnEncoder.getPosition());
-      var data = String.format("\"%s Drive\", %f, %f, %f, ", moduleName, Robot.time.get(), 
-        getDrivingEncoderRate(), driveMotor.getSelectedSensorPosition() * Constants.DRIVE_ENCODER_RATE_TO_METERS_PER_SEC / 10.0);
-      Robot.bw.write(data);
-    }
-    catch (Exception e)
-    {
-      e.printStackTrace();
-    }
+  // public void setMotorSpeeds(double driveSpeed, double turnSpeed)
+  // {
+  //   try
+  //   {
+  //     // var data = String.format("\"%s Turn\", %f, %f, %f, ", moduleName, Timer.getFPGATimestamp(), 
+  //     //   turnEncoder.getVelocity(), turnEncoder.getPosition());
+  //     var data = String.format("\"%s Drive\", %f, %f, %f, ", moduleName, Robot.time.get(), 
+  //       getDrivingEncoderRate(), driveMotor.getSelectedSensorPosition() * Constants.DRIVE_ENCODER_RATE_TO_METERS_PER_SEC / 10.0);
+  //     Robot.bw.write(data);
+  //   }
+  //   catch (Exception e)
+  //   {
+  //     e.printStackTrace();
+  //   }
 
-    driveMotor.set(ControlMode.PercentOutput, driveSpeed);
-    turnMotor.set(ControlMode.PercentOutput, turnSpeed);
-  }
+  //   driveMotor.set(ControlMode.PercentOutput, driveSpeed);
+  //   turnMotor.set(ControlMode.PercentOutput, turnSpeed);
+  // }
 
   public double getDriveMotorPosition()
   {
@@ -439,4 +437,11 @@ public class SwerveModule
   // {
   //   return turnEncoder.getVelocity();
   // }
+
+  public void stopModule()
+  {
+    driveMotor.set(ControlMode.PercentOutput, 0.0);
+    turnMotor.set(ControlMode.PercentOutput, 0.0);
+  }
+
 }

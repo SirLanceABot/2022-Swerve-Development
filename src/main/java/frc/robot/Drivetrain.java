@@ -8,8 +8,8 @@ import javax.print.attribute.standard.Fidelity;
 
 import com.kauailabs.navx.frc.AHRS;
 
-import edu.wpi.first.wpilibj.MotorSafety;
 import edu.wpi.first.wpilibj.SerialPort;
+import edu.wpi.first.wpilibj.drive.RobotDriveBase;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
@@ -19,7 +19,7 @@ import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 /** Represents a swerve drive style drivetrain. */
-public class Drivetrain //extends RobotDriveBase
+public class Drivetrain extends RobotDriveBase
 {
 //   public static final double kMaxSpeed = 3.0; // 3 meters per second
 //   public static final double kMaxAngularSpeed = Math.PI; // 1/2 rotation per second
@@ -52,6 +52,8 @@ public class Drivetrain //extends RobotDriveBase
 
   public Drivetrain()
   {
+    super();
+
     navx.reset();
     
     // System.out.println(frontLeft.getTurningEncoderPosition());
@@ -109,6 +111,8 @@ public class Drivetrain //extends RobotDriveBase
     backRight.setDesiredState(swerveModuleStates[3]);
 
     previousSwerveModuleStates = swerveModuleStates;
+
+    feedWatchdog();
   }
 
   /** Updates the field relative position of the robot. */
@@ -122,21 +126,23 @@ public class Drivetrain //extends RobotDriveBase
         backRight.getState());
   }
 
-  public void setMotorSpeeds(double driveSpeed, double turnSpeed)
-  {
-    frontLeft.setMotorSpeeds(driveSpeed, turnSpeed);
-    frontRight.setMotorSpeeds(driveSpeed, turnSpeed);
-    backLeft.setMotorSpeeds(driveSpeed, turnSpeed);
-    backRight.setMotorSpeeds(driveSpeed, turnSpeed);
-    try
-    {
-      Robot.bw.newLine();
-    }
-    catch (Exception e)
-    {
-      e.printStackTrace();
-    }
-  }
+  // private void setMotorSpeeds(double driveSpeed, double turnSpeed)
+  // {
+  //   frontLeft.setMotorSpeeds(driveSpeed, turnSpeed);
+  //   frontRight.setMotorSpeeds(driveSpeed, turnSpeed);
+  //   backLeft.setMotorSpeeds(driveSpeed, turnSpeed);
+  //   backRight.setMotorSpeeds(driveSpeed, turnSpeed);
+  //   feedWatchdog();
+
+  //   try
+  //   {
+  //     Robot.bw.newLine();
+  //   }
+  //   catch (Exception e)
+  //   {
+  //     e.printStackTrace();
+  //   }
+  // }
 
   public void resetEncoders()
   {
@@ -166,17 +172,21 @@ public class Drivetrain //extends RobotDriveBase
   //   return backRight.getTurnEncoderRate();
   // }
 
-  // @Override
-  // public void stopMotor()
-  // {
-  //   frontLeft
-  // }
+  @Override
+  public void stopMotor()
+  {
+    frontLeft.stopModule();
+    frontRight.stopModule();
+    backLeft.stopModule();
+    backRight.stopModule();
+    feedWatchdog();
+  }
 
-  // @Override
-  // public String getDescription()
-  // {
-  //   return "Swerve Drivetrain";
-  // }
+  @Override
+  public String getDescription()
+  {
+    return "Swerve Drivetrain";
+  }
 
   public void printNavX()
   {
