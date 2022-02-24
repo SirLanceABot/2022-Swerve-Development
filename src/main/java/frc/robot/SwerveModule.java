@@ -143,8 +143,8 @@ public class SwerveModule
 
     driveMotor.setStatusFramePeriod(StatusFrameEnhanced.Status_2_Feedback0, 20);
     configDriveTalon();
-    configTurnTalon(); // Do not invert any of the turning motors
     configCANCoder();
+    configTurnTalon(); // Do not invert any of the turning motors
 
     // When deploy code set the integrated encoder to the absolute encoder on the CANCoder
     turnEncoder.setPosition(turnEncoder.getAbsolutePosition());
@@ -197,19 +197,26 @@ public class SwerveModule
     // // 10th of a second to 50th of a second or something
     // final double kDTalonFX = (0.09 * (10 * 5)) / Constants.DRIVE_ENCODER_RATE_IN_MOTOR_TICKS_PER_100MS;
 
+    /*
+    // Cancelled
     // TODO: Move these constants somewhere else or remove calculations
-    final double kPTalonFX = (3.5 / (1 / Constants.DRIVE_ENCODER_RATE_TO_METERS_PER_SEC));
+    final double kPTalonFX = 200 * (3.5 / (1 / Constants.DRIVE_ENCODER_RATE_TO_METERS_PER_SEC));
+    final double kITalonFX = 0.0;
     // 10th of a second to 50th of a second or something
     final double kDTalonFX = (0.09 * (0.2 / (1 / Constants.DRIVE_ENCODER_RATE_TO_METERS_PER_SEC)));
 
-    // final double kFTalonFX = (1023 * )
+    // Probably the wrong number but is my backup
+    // final double kFTalonFX = (1023 * 0.75) / (2.1 / (1 / Constants.DRIVE_ENCODER_RATE_TO_METERS_PER_SEC));
+    // Was 2.1 originally
+    final double kFTalonFX = (3 / (1 / Constants.DRIVE_ENCODER_RATE_TO_METERS_PER_SEC));
 
     // TODO: Finish moving PID to TalonFX
     driveMotor.config_kP(0, kPTalonFX);
-    driveMotor.config_kI(0, 0);
+    driveMotor.config_kI(0, kITalonFX);
     driveMotor.config_kD(0, kDTalonFX);
 
-    // driveMotor.config_kF(0, kFTalonFX);
+    driveMotor.config_kF(0, kFTalonFX);
+    */
   }
 
   private void configTurnTalon()
@@ -339,6 +346,11 @@ public class SwerveModule
     var normalizedDriveVoltage = normalizeVoltage(driveOutput + driveFeedforwardValue);
     var normalizedTurnVoltage = normalizeVoltage(turnOutput + turnFeedforwardValue);
     driveMotor.set(ControlMode.PercentOutput, normalizedDriveVoltage);
+    // Used for running PIDF on TalonFX
+    // var ticksPer100MS = state.speedMetersPerSecond * (1 / Constants.DRIVE_ENCODER_RATE_TO_METERS_PER_SEC);
+    // System.out.println("M/S: " + state.speedMetersPerSecond + ", Ticks/100MS: " + ticksPer100MS);
+    // driveMotor.set(ControlMode.Velocity, ticksPer100MS);
+    // getDrivingEncoderRate();
     turnMotor.set(ControlMode.PercentOutput, normalizedTurnVoltage);
 
 
